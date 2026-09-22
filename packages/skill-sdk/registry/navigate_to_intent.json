@@ -1,0 +1,47 @@
+{
+  "id": "navigate_to_intent",
+  "version": "1.0.0",
+  "purpose": "Navigate the browser to the route or page that best matches the stated user intent, using known routes from the current SemanticPageModel.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["intent"],
+    "additionalProperties": false,
+    "properties": {
+      "intent": { "type": "string", "minLength": 1, "description": "Human-readable navigation goal" },
+      "routeHint": { "type": "string", "description": "Optional resolved route path to skip intent matching" },
+      "openInNewTab": { "type": "boolean", "default": false }
+    }
+  },
+  "preconditions": [
+    "Intent maps to a known route in the current page's SemanticPageModel or routeHint is provided",
+    "Navigation is not blocked by an unsaved-changes guard on the current page"
+  ],
+  "permissions": ["NAVIGATE"],
+  "sideEffects": ["route-change"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["navigated"],
+    "properties": {
+      "navigated": { "type": "boolean" },
+      "resolvedRoute": { "type": "string" },
+      "previousRoute": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "ROUTE_NOT_FOUND", "retryable": false },
+    { "code": "NAVIGATION_BLOCKED", "retryable": true },
+    { "code": "VERIFICATION_TIMEOUT", "retryable": true }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "route-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.navigate_to_intent.invoked",
+      "aua.skill.navigate_to_intent.completed",
+      "aua.skill.navigate_to_intent.rolled_back"
+    ]
+  },
+  "securityClassification": "NAVIGATE"
+}

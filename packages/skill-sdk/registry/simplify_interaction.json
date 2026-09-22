@@ -1,0 +1,50 @@
+{
+  "id": "simplify_interaction",
+  "version": "1.0.0",
+  "purpose": "Reduce the complexity of a multi-step or compound interaction pattern on a page region by injecting a linearised, step-by-step alternative interaction flow.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["regionId"],
+    "additionalProperties": false,
+    "properties": {
+      "regionId": { "type": "string", "description": "SemanticElement.id of the region to simplify" },
+      "strategy": {
+        "type": "string",
+        "enum": ["linear-steps", "reduce-options", "expose-defaults"],
+        "default": "linear-steps"
+      }
+    }
+  },
+  "preconditions": [
+    "Region element with matching id exists in the current SemanticPageModel",
+    "Region contains at least two interactive sub-elements"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["dom-mutation"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["simplified"],
+    "properties": {
+      "simplified": { "type": "boolean" },
+      "simplificationId": { "type": "string" },
+      "stepCount": { "type": "integer" }
+    }
+  },
+  "errorModel": [
+    { "code": "REGION_NOT_FOUND", "retryable": false },
+    { "code": "REGION_TOO_SIMPLE", "retryable": false },
+    { "code": "ALREADY_SIMPLIFIED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.simplify_interaction.invoked",
+      "aua.skill.simplify_interaction.completed",
+      "aua.skill.simplify_interaction.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

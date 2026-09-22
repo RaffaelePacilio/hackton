@@ -1,0 +1,44 @@
+{
+  "id": "restore_focus",
+  "version": "1.0.0",
+  "purpose": "Return keyboard focus to the element that held focus immediately before the last focus-displacing operation, preserving navigation continuity.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "fallbackElementId": {
+        "type": "string",
+        "description": "SemanticElement.id to focus if no prior focus position is recorded"
+      }
+    }
+  },
+  "preconditions": [
+    "A previous focus position was recorded by the focus manager, or fallbackElementId is provided"
+  ],
+  "permissions": ["FOCUS"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["restored"],
+    "properties": {
+      "restored": { "type": "boolean" },
+      "restoredElementId": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "NO_PRIOR_FOCUS", "retryable": false },
+    { "code": "ELEMENT_GONE", "retryable": false },
+    { "code": "FOCUS_INTERCEPTED", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.restore_focus.invoked",
+      "aua.skill.restore_focus.completed"
+    ]
+  },
+  "securityClassification": "FOCUS"
+}

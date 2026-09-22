@@ -1,0 +1,51 @@
+{
+  "id": "increase_target_size",
+  "version": "1.0.0",
+  "purpose": "Increase the pointer hit area and visual size of an interactive element using CSS overrides, improving usability for users with motor difficulties targeting small controls.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id of the element to enlarge" },
+      "targetSizePx": { "type": "integer", "minimum": 24, "default": 44, "description": "Minimum pointer target dimension in CSS pixels (WCAG 2.5.8 recommends 24px, 44px preferred)" }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "Element is interactive (button, link, or focusable control)"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["style-override"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["applied"],
+    "properties": {
+      "applied": { "type": "boolean" },
+      "previousSize": {
+        "type": "object",
+        "properties": {
+          "width": { "type": "number" },
+          "height": { "type": "number" }
+        }
+      }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "ELEMENT_NOT_INTERACTIVE", "retryable": false },
+    { "code": "STYLE_BLOCKED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.increase_target_size.invoked",
+      "aua.skill.increase_target_size.completed",
+      "aua.skill.increase_target_size.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

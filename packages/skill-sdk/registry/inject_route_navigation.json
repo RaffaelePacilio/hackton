@@ -1,0 +1,49 @@
+{
+  "id": "inject_route_navigation",
+  "version": "1.0.0",
+  "purpose": "Inject an accessible navigation landmark web component that exposes the application's known routes as a keyboard-traversable list, supplementing or replacing inaccessible custom navigation widgets.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "placement": {
+        "type": "string",
+        "enum": ["top", "bottom", "sidebar"],
+        "default": "top"
+      },
+      "label": { "type": "string", "default": "Site navigation" }
+    }
+  },
+  "preconditions": [
+    "SemanticPageModel contains at least one known navigation route",
+    "No route navigation widget is already injected"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["dom-mutation"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["injected"],
+    "properties": {
+      "injected": { "type": "boolean" },
+      "navId": { "type": "string" },
+      "routeCount": { "type": "integer" }
+    }
+  },
+  "errorModel": [
+    { "code": "NO_ROUTES_FOUND", "retryable": true },
+    { "code": "ALREADY_INJECTED", "retryable": false },
+    { "code": "INJECTION_BLOCKED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.inject_route_navigation.invoked",
+      "aua.skill.inject_route_navigation.completed",
+      "aua.skill.inject_route_navigation.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

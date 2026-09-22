@@ -1,0 +1,49 @@
+{
+  "id": "inject_command_palette",
+  "version": "1.0.0",
+  "purpose": "Inject a keyboard-accessible command palette overlay that surfaces page actions and navigation targets, enabling rapid access without pointer interaction.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "triggerKey": {
+        "type": "string",
+        "default": "Ctrl+Space",
+        "description": "Keyboard shortcut to open the palette"
+      },
+      "includeNavigation": { "type": "boolean", "default": true },
+      "includeActions": { "type": "boolean", "default": true }
+    }
+  },
+  "preconditions": [
+    "SemanticPageModel is available for the current page",
+    "No command palette is already injected on this page"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["dom-mutation"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["injected"],
+    "properties": {
+      "injected": { "type": "boolean" },
+      "paletteId": { "type": "string" },
+      "commandCount": { "type": "integer" }
+    }
+  },
+  "errorModel": [
+    { "code": "ALREADY_INJECTED", "retryable": false },
+    { "code": "INJECTION_BLOCKED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.inject_command_palette.invoked",
+      "aua.skill.inject_command_palette.completed",
+      "aua.skill.inject_command_palette.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

@@ -1,0 +1,218 @@
+{
+  "version": "1.0",
+  "language": "it-IT",
+  "description": "Synthetic Italian utterances for voice benchmarking. All audio is TTS-generated — no real user data.",
+  "categories": ["navigation", "form_dictation", "numbers_dates", "free_form"],
+  "utterances": [
+    {
+      "id": "nav-001",
+      "category": "navigation",
+      "text": "Vai alla pagina successiva",
+      "ground_truth": "vai alla pagina successiva",
+      "notes": "Basic forward navigation command"
+    },
+    {
+      "id": "nav-002",
+      "category": "navigation",
+      "text": "Torna alla pagina precedente",
+      "ground_truth": "torna alla pagina precedente",
+      "notes": "Back navigation command"
+    },
+    {
+      "id": "nav-003",
+      "category": "navigation",
+      "text": "Scorri verso il basso",
+      "ground_truth": "scorri verso il basso",
+      "notes": "Scroll down command"
+    },
+    {
+      "id": "nav-004",
+      "category": "navigation",
+      "text": "Apri il menu principale",
+      "ground_truth": "apri il menu principale",
+      "notes": "Open main menu"
+    },
+    {
+      "id": "nav-005",
+      "category": "navigation",
+      "text": "Chiudi questa finestra",
+      "ground_truth": "chiudi questa finestra",
+      "notes": "Close window command"
+    },
+    {
+      "id": "nav-006",
+      "category": "navigation",
+      "text": "Vai alla sezione contatti",
+      "ground_truth": "vai alla sezione contatti",
+      "notes": "Navigate to contacts section"
+    },
+    {
+      "id": "nav-007",
+      "category": "navigation",
+      "text": "Cerca prodotti disponibili",
+      "ground_truth": "cerca prodotti disponibili",
+      "notes": "Search available products"
+    },
+    {
+      "id": "nav-008",
+      "category": "navigation",
+      "text": "Seleziona il primo risultato",
+      "ground_truth": "seleziona il primo risultato",
+      "notes": "Select first result"
+    },
+    {
+      "id": "form-001",
+      "category": "form_dictation",
+      "text": "Il mio nome è Mario Rossi",
+      "ground_truth": "il mio nome è mario rossi",
+      "notes": "Common Italian full name"
+    },
+    {
+      "id": "form-002",
+      "category": "form_dictation",
+      "text": "La mia email è mario punto rossi chiocciola esempio punto it",
+      "ground_truth": "la mia email è mario punto rossi chiocciola esempio punto it",
+      "notes": "Email address dictation — tests special character verbalization"
+    },
+    {
+      "id": "form-003",
+      "category": "form_dictation",
+      "text": "Il mio indirizzo è via Roma ventitre Milano",
+      "ground_truth": "il mio indirizzo è via roma ventitre milano",
+      "notes": "Street address with number"
+    },
+    {
+      "id": "form-004",
+      "category": "form_dictation",
+      "text": "Il codice fiscale è RSSMRA eighty cinquanta uno A seven hundred and fifteen S",
+      "ground_truth": "il codice fiscale è rssmra ottanta cinquantuno a settecentoquindici s",
+      "notes": "Alphanumeric Italian tax code — tests mixed character recognition"
+    },
+    {
+      "id": "form-005",
+      "category": "form_dictation",
+      "text": "Confermo di accettare i termini e le condizioni",
+      "ground_truth": "confermo di accettare i termini e le condizioni",
+      "notes": "Consent confirmation sentence"
+    },
+    {
+      "id": "form-006",
+      "category": "form_dictation",
+      "text": "Il mio numero di telefono è zero tre due uno due tre quattro cinque sei",
+      "ground_truth": "il mio numero di telefono è zero tre due uno due tre quattro cinque sei",
+      "notes": "Italian phone number dictation"
+    },
+    {
+      "id": "form-007",
+      "category": "form_dictation",
+      "text": "Professione ingegnere informatico",
+      "ground_truth": "professione ingegnere informatico",
+      "notes": "Occupation field — tests professional vocabulary"
+    },
+    {
+      "id": "form-008",
+      "category": "form_dictation",
+      "text": "Note aggiuntive nessuna allergia nota",
+      "ground_truth": "note aggiuntive nessuna allergia nota",
+      "notes": "Free-text notes field"
+    },
+    {
+      "id": "num-001",
+      "category": "numbers_dates",
+      "text": "Il codice postale è zero uno zero zero zero",
+      "ground_truth": "il codice postale è zero uno zero zero zero",
+      "notes": "5-digit postal code spoken digit by digit"
+    },
+    {
+      "id": "num-002",
+      "category": "numbers_dates",
+      "text": "La data di nascita è il quindici marzo millenovecentottantadue",
+      "ground_truth": "la data di nascita è il quindici marzo millenovecentottantadue",
+      "notes": "Full date of birth"
+    },
+    {
+      "id": "num-003",
+      "category": "numbers_dates",
+      "text": "L'importo è duemilaquattrocentocinquanta euro e trenta centesimi",
+      "ground_truth": "l'importo è duemilaquattrocentocinquanta euro e trenta centesimi",
+      "notes": "Currency amount"
+    },
+    {
+      "id": "num-004",
+      "category": "numbers_dates",
+      "text": "L'appuntamento è per il venti giugno duemilaventisei alle ore quattordici e trenta",
+      "ground_truth": "l'appuntamento è per il venti giugno duemilaventisei alle ore quattordici e trenta",
+      "notes": "Date and time combined"
+    },
+    {
+      "id": "num-005",
+      "category": "numbers_dates",
+      "text": "Il numero di pratica è uno due tre quattro cinque sei sette",
+      "ground_truth": "il numero di pratica è uno due tre quattro cinque sei sette",
+      "notes": "7-digit reference number digit-by-digit"
+    },
+    {
+      "id": "num-006",
+      "category": "numbers_dates",
+      "text": "La scadenza è il trenta novembre duemilaventisei",
+      "ground_truth": "la scadenza è il trenta novembre duemilaventisei",
+      "notes": "Expiry date"
+    },
+    {
+      "id": "num-007",
+      "category": "numbers_dates",
+      "text": "Il punteggio ottenuto è novantadue su cento",
+      "ground_truth": "il punteggio ottenuto è novantadue su cento",
+      "notes": "Score out of 100"
+    },
+    {
+      "id": "free-001",
+      "category": "free_form",
+      "text": "Non riesco ad accedere al mio account perché ho dimenticato la password",
+      "ground_truth": "non riesco ad accedere al mio account perché ho dimenticato la password",
+      "notes": "Support request — common accessibility scenario"
+    },
+    {
+      "id": "free-002",
+      "category": "free_form",
+      "text": "Vorrei prenotare un appuntamento con il medico di base per la settimana prossima",
+      "ground_truth": "vorrei prenotare un appuntamento con il medico di base per la settimana prossima",
+      "notes": "Appointment booking — healthcare vocabulary"
+    },
+    {
+      "id": "free-003",
+      "category": "free_form",
+      "text": "Come posso richiedere il rimborso per un acquisto effettuato online",
+      "ground_truth": "come posso richiedere il rimborso per un acquisto effettuato online",
+      "notes": "Refund request — e-commerce vocabulary"
+    },
+    {
+      "id": "free-004",
+      "category": "free_form",
+      "text": "Aggiorna le mie preferenze di accessibilità per la modalità ad alto contrasto",
+      "ground_truth": "aggiorna le mie preferenze di accessibilità per la modalità ad alto contrasto",
+      "notes": "Accessibility settings — contains the word 'accessibilità'"
+    },
+    {
+      "id": "free-005",
+      "category": "free_form",
+      "text": "Il documento allegato contiene informazioni riservate e non deve essere condiviso",
+      "ground_truth": "il documento allegato contiene informazioni riservate e non deve essere condiviso",
+      "notes": "Longer sentence — tests sustained recognition"
+    },
+    {
+      "id": "free-006",
+      "category": "free_form",
+      "text": "Invia il modulo compilato all'ufficio competente entro la fine del mese",
+      "ground_truth": "invia il modulo compilato all'ufficio competente entro la fine del mese",
+      "notes": "Administrative instruction"
+    },
+    {
+      "id": "free-007",
+      "category": "free_form",
+      "text": "Grazie per l'assistenza ricevuta il servizio è stato molto utile",
+      "ground_truth": "grazie per l'assistenza ricevuta il servizio è stato molto utile",
+      "notes": "Closing sentence — satisfaction feedback"
+    }
+  ]
+}

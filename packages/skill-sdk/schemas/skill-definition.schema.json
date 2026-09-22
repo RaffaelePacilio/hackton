@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aua.dev/schemas/skill-definition/v1.0.0",
+  "title": "SkillDefinition",
+  "description": "Baseline skill definition for the AUA Skill Registry (skill-contract.md v1.0.0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "purpose",
+    "inputSchema",
+    "preconditions",
+    "permissions",
+    "sideEffects",
+    "outputSchema",
+    "errorModel",
+    "rollback",
+    "verificationStrategy",
+    "telemetry",
+    "securityClassification"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "snake_case unique skill identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+      "description": "Per-skill semver; additive-versioned independently of SDK package version"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 10
+    },
+    "inputSchema": {
+      "type": "object",
+      "description": "JSON Schema describing the skill's input parameters"
+    },
+    "preconditions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "permissions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/CapabilityClass" }
+    },
+    "sideEffects": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "outputSchema": {
+      "type": "object",
+      "description": "JSON Schema describing the skill's output shape"
+    },
+    "errorModel": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "retryable"],
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "description": "SCREAMING_SNAKE_CASE error code"
+          },
+          "retryable": { "type": "boolean" }
+        }
+      }
+    },
+    "rollback": {
+      "type": "string",
+      "enum": ["supported", "not-applicable", "manual-only"]
+    },
+    "verificationStrategy": {
+      "type": "string",
+      "enum": ["dom-read", "route-check", "state-diff", "accessibility-check"],
+      "description": "Reference to a Verification Engine check method (ADR-017)"
+    },
+    "telemetry": {
+      "type": "object",
+      "required": ["emits"],
+      "additionalProperties": false,
+      "properties": {
+        "emits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^aua\\.skill\\.",
+            "description": "OpenTelemetry event name; must start with aua.skill."
+          }
+        }
+      }
+    },
+    "securityClassification": { "$ref": "#/$defs/CapabilityClass" }
+  },
+  "$defs": {
+    "CapabilityClass": {
+      "type": "string",
+      "enum": [
+        "READ",
+        "FOCUS",
+        "NAVIGATE",
+        "WRITE_LOW_RISK",
+        "WRITE_PERSONAL_DATA",
+        "SUBMIT",
+        "AUTHENTICATE",
+        "PAYMENT",
+        "DESTRUCTIVE"
+      ]
+    }
+  }
+}

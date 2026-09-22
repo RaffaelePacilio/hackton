@@ -1,0 +1,33 @@
+{
+  "name": "@aua/skill-sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Skill registry definitions and loader for the AUA platform (WP-005)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "registry",
+    "schemas"
+  ],
+  "scripts": {
+    "validate": "node scripts/validate-registry.mjs",
+    "build": "npm run validate && tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

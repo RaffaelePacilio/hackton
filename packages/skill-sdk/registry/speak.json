@@ -1,0 +1,49 @@
+{
+  "id": "speak",
+  "version": "1.0.0",
+  "purpose": "Synthesize and play a text-to-speech utterance via the configured voice provider, delivering audible output to the user without screen reader dependency.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["text"],
+    "additionalProperties": false,
+    "properties": {
+      "text": { "type": "string", "minLength": 1 },
+      "language": { "type": "string", "default": "en-US" },
+      "rate": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+      "priority": {
+        "type": "string",
+        "enum": ["normal", "urgent"],
+        "default": "normal",
+        "description": "urgent interrupts any in-progress speech"
+      }
+    }
+  },
+  "preconditions": [
+    "Voice output provider is initialised and not muted"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["audio-output"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["spoken"],
+    "properties": {
+      "spoken": { "type": "boolean" },
+      "durationMs": { "type": "integer" }
+    }
+  },
+  "errorModel": [
+    { "code": "TTS_PROVIDER_UNAVAILABLE", "retryable": true },
+    { "code": "SPEECH_SYNTHESIS_ERROR", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "dom-read",
+  "telemetry": {
+    "emits": [
+      "aua.skill.speak.invoked",
+      "aua.skill.speak.completed"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "fill_field",
+  "version": "1.0.0",
+  "purpose": "Set the value of a form field, dispatching synthetic input and change events so that framework state managers observe the update.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId", "value"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id of the target field" },
+      "value": { "type": "string" },
+      "fieldType": {
+        "type": "string",
+        "enum": ["text", "email", "tel", "number", "date", "password", "search"],
+        "default": "text"
+      },
+      "sensitive": {
+        "type": "boolean",
+        "default": false,
+        "description": "When true, value is redacted from telemetry and logs (ADR-015)"
+      }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "Element is editable: not disabled and not readonly",
+    "User has acknowledged the WRITE_PERSONAL_DATA pre-announcement, or InteractionContract.preferences.confirmBeforeAction is false"
+  ],
+  "permissions": ["WRITE_PERSONAL_DATA"],
+  "sideEffects": [
+    "field-value-change",
+    "input-event-dispatch",
+    "change-event-dispatch"
+  ],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["filled"],
+    "properties": {
+      "filled": { "type": "boolean" },
+      "previousValue": {
+        "type": "string",
+        "description": "Captured before fill; used for rollback. Omitted or redacted when sensitive is true"
+      }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "ELEMENT_NOT_EDITABLE", "retryable": false },
+    { "code": "FRAMEWORK_BLOCKED", "retryable": false },
+    { "code": "VERIFICATION_TIMEOUT", "retryable": true }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "dom-read",
+  "telemetry": {
+    "emits": [
+      "aua.skill.fill_field.invoked",
+      "aua.skill.fill_field.completed",
+      "aua.skill.fill_field.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_PERSONAL_DATA"
+}
