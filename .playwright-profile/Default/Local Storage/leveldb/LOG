@@ -1,3 +1,2 @@
-2026/09/22-15:11:26.646 4280 Reusing MANIFEST C:\HACKATON\new\hackton\.playwright-profile\Default\Local Storage\leveldb/MANIFEST-000001
-2026/09/22-15:11:26.656 4280 Recovering log #3
-2026/09/22-15:11:26.663 4280 Reusing old log C:\HACKATON\new\hackton\.playwright-profile\Default\Local Storage\leveldb/000003.log 
+2026/09/22-15:14:09.669 7cf0 Creating DB C:\HACKATON\new\hackton\.playwright-profile\Default\Local Storage\leveldb since it was missing.
+2026/09/22-15:14:09.797 7cf0 Reusing MANIFEST C:\HACKATON\new\hackton\.playwright-profile\Default\Local Storage\leveldb/MANIFEST-000001

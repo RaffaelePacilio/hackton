@@ -1,16 +1,17 @@
 // End-to-end smoke test for the pocket demo: reproduces demo/inaccessible-form.html
-// inside jsdom and imports the REAL content-script module (the same one bundled
-// into dist/content/content-script.js) to verify the missing-accessible-name
-// barrier is actually detected and resolved, independent of manually loading the
-// extension in a real browser.
-
-// content-script.ts calls injectPageBridge() at import time, which needs
-// chrome.runtime.getURL — stub the minimal chrome API surface it touches.
-(globalThis as unknown as { chrome: unknown }).chrome = {
-  runtime: {
-    getURL: (path: string) => `chrome-extension://test-id/${path}`,
-  },
-};
+// inside jsdom and imports the REAL main-world-barriers module (the same one
+// bundled into dist/content/main-world-barriers.js and injected into the
+// page's MAIN world per manifest.json) to verify the missing-accessible-name
+// barrier is actually detected and resolved. This module deliberately has no
+// chrome.* dependency (main-world scripts can't use extension APIs — see the
+// comment at the top of main-world-barriers.ts), so no chrome stub is needed
+// here, unlike content-script.ts's own tests.
+//
+// Confirmed against a real Chromium + real unpacked extension too, via
+// e2e/pocket-demo.e2e.mjs (Playwright) — that test caught a bug this jsdom
+// test could not: customElements is null in a content script's isolated
+// world, so this logic silently did nothing until it was moved out of
+// content-script.ts into this main-world script.
 
 describe("pocket demo — missing accessible name barrier", () => {
   beforeEach(() => {
@@ -24,11 +25,11 @@ describe("pocket demo — missing accessible name barrier", () => {
   });
 
   it("mounts an a11y-field-proxy next to every unlabeled field, and an a11y-live-region", async () => {
-    // Fresh module registry per test: content-script.ts runs init() as a
+    // Fresh module registry per test: main-world-barriers.ts runs init() as a
     // side effect at import time, and we want that side effect to fire
     // against the DOM we just set up above.
     await jest.isolateModulesAsync(async () => {
-      await import("../content/content-script.js");
+      await import("../content/main-world-barriers.js");
     });
 
     const proxies = document.querySelectorAll("a11y-field-proxy");
@@ -62,7 +63,7 @@ describe("pocket demo — missing accessible name barrier", () => {
     `;
 
     await jest.isolateModulesAsync(async () => {
-      await import("../content/content-script.js");
+      await import("../content/main-world-barriers.js");
     });
 
     expect(document.querySelectorAll("a11y-field-proxy").length).toBe(0);
@@ -70,7 +71,7 @@ describe("pocket demo — missing accessible name barrier", () => {
 
   it("syncs typing in the proxy back to the original field", async () => {
     await jest.isolateModulesAsync(async () => {
-      await import("../content/content-script.js");
+      await import("../content/main-world-barriers.js");
     });
 
     const original = document.querySelector('input[name="full_name"]') as HTMLInputElement;

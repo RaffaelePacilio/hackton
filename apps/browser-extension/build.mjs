@@ -26,7 +26,7 @@ const common = {
 // script requires.
 await esbuild.build({
   ...common,
-  entryPoints: ["src/content/content-script.ts"],
+  entryPoints: ["src/content/content-script.ts", "src/content/main-world-barriers.ts"],
   format: "iife",
 });
 

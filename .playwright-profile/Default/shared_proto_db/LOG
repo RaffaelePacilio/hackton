@@ -1,3 +1,2 @@
-2026/09/22-15:11:25.632 c7c0 Reusing MANIFEST C:\HACKATON\new\hackton\.playwright-profile\Default\shared_proto_db/MANIFEST-000001
-2026/09/22-15:11:25.645 c7c0 Recovering log #3
-2026/09/22-15:11:25.650 c7c0 Reusing old log C:\HACKATON\new\hackton\.playwright-profile\Default\shared_proto_db/000003.log 
+2026/09/22-15:14:09.206 8610 Creating DB C:\HACKATON\new\hackton\.playwright-profile\Default\shared_proto_db since it was missing.
+2026/09/22-15:14:09.270 8610 Reusing MANIFEST C:\HACKATON\new\hackton\.playwright-profile\Default\shared_proto_db/MANIFEST-000001
