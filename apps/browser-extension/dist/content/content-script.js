@@ -1,3 +1,463 @@
+// ../../packages/web-components/dist/base/lifecycle-emitter.js
+function emitLifecycle(host, type, detail) {
+  host.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail }));
+}
+
+// ../../packages/web-components/dist/base/focus-manager.js
+var FOCUSABLE_SELECTOR = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+function getFocusable(root) {
+  return Array.from(root.querySelectorAll(FOCUSABLE_SELECTOR));
+}
+function trapFocus(root) {
+  function onKeyDown(event) {
+    const e = event;
+    if (e.key !== "Tab")
+      return;
+    const focusable = getFocusable(root);
+    if (focusable.length === 0)
+      return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first || !last)
+      return;
+    const active = root.activeElement;
+    if (e.shiftKey) {
+      if (active === first || active === null) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (active === last || active === null) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+  root.addEventListener("keydown", onKeyDown);
+  return () => root.removeEventListener("keydown", onKeyDown);
+}
+function restoreFocus(target) {
+  if (target instanceof HTMLElement && target.isConnected) {
+    target.focus();
+  }
+}
+
+// ../../packages/web-components/dist/base/AuaElement.js
+var __classPrivateFieldSet = function(receiver, state, value, kind, f) {
+  if (kind === "m") throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+};
+var __classPrivateFieldGet = function(receiver, state, kind, f) {
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _AuaElement_instances;
+var _AuaElement_shadowRoot;
+var _AuaElement_cleanupFocusTrap;
+var _AuaElement_previouslyFocused;
+var _AuaElement_mutationObserver;
+var _AuaElement_lastConnectedParent;
+var _AuaElement_clearShadowContent;
+var _AuaElement_detail;
+var BASE_CSS = `
+  :host {
+    all: initial;
+    contain: layout style paint;
+    z-index: var(--aua-z-index, 9000);
+    isolation: isolate;
+    display: block;
+    box-sizing: border-box;
+    font-family: var(--aua-font-family, inherit);
+    font-size: var(--aua-font-size-base, 1rem);
+    color: var(--aua-color-primary, inherit);
+    background: var(--aua-color-surface, transparent);
+  }
+`;
+function applyBaseStyles(shadow) {
+  if (typeof CSSStyleSheet !== "undefined" && "replaceSync" in CSSStyleSheet.prototype) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(BASE_CSS);
+    shadow.adoptedStyleSheets = [sheet];
+  } else {
+    const style = document.createElement("style");
+    style.textContent = BASE_CSS;
+    shadow.appendChild(style);
+  }
+}
+var AuaElement = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    _AuaElement_instances.add(this);
+    this.targetElementId = "";
+    this.semanticIntent = "";
+    this.adaptationConfig = {
+      skillId: "",
+      mountPoint: "adjacent",
+      zIndexStrategy: "isolated-stacking-context"
+    };
+    _AuaElement_shadowRoot.set(this, null);
+    _AuaElement_cleanupFocusTrap.set(this, null);
+    _AuaElement_previouslyFocused.set(this, null);
+    _AuaElement_mutationObserver.set(this, null);
+    _AuaElement_lastConnectedParent.set(this, null);
+  }
+  connectedCallback() {
+    __classPrivateFieldSet(this, _AuaElement_lastConnectedParent, this.parentNode, "f");
+    if (!this.targetElementId) {
+      console.warn("[AUA] targetElementId not set \u2014 adapter not mounted.", this);
+      return;
+    }
+    const target = document.getElementById(this.targetElementId);
+    if (!target) {
+      console.warn(`[AUA] targetElementId "${this.targetElementId}" not found \u2014 adapter not mounted.`);
+      return;
+    }
+    if (!this.accessibleRole || !this.accessibleName) {
+      throw new Error(`[AUA] ${this.tagName}: accessibleRole and accessibleName must be non-empty before mount.`);
+    }
+    __classPrivateFieldSet(this, _AuaElement_previouslyFocused, document.activeElement, "f");
+    if (!__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f")) {
+      __classPrivateFieldSet(this, _AuaElement_shadowRoot, this.attachShadow({ mode: "closed" }), "f");
+      applyBaseStyles(__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f"));
+    } else {
+      __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_clearShadowContent).call(this);
+    }
+    this.render(__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f"));
+    emitLifecycle(this, "aua:mount", __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_detail).call(this));
+  }
+  disconnectedCallback() {
+    __classPrivateFieldGet(this, _AuaElement_cleanupFocusTrap, "f")?.call(this);
+    __classPrivateFieldSet(this, _AuaElement_cleanupFocusTrap, null, "f");
+    restoreFocus(__classPrivateFieldGet(this, _AuaElement_previouslyFocused, "f"));
+    __classPrivateFieldSet(this, _AuaElement_previouslyFocused, null, "f");
+    __classPrivateFieldGet(this, _AuaElement_mutationObserver, "f")?.disconnect();
+    __classPrivateFieldSet(this, _AuaElement_mutationObserver, null, "f");
+    __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_clearShadowContent).call(this);
+    emitLifecycle(__classPrivateFieldGet(this, _AuaElement_lastConnectedParent, "f") ?? this, "aua:unmount", __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_detail).call(this));
+    __classPrivateFieldSet(this, _AuaElement_lastConnectedParent, null, "f");
+  }
+  /**
+   * Call when the host SPA re-renders the proxied element (same logical element,
+   * new DOM node). Updates targetElementId, re-renders, emits aua:rebind.
+   */
+  rebind(newTargetElementId) {
+    this.targetElementId = newTargetElementId;
+    const target = document.getElementById(newTargetElementId);
+    if (!target) {
+      console.warn(`[AUA] rebind: targetElementId "${newTargetElementId}" not found \u2014 skipping render.`);
+    } else if (__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f")) {
+      __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_clearShadowContent).call(this);
+      this.render(__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f"));
+    }
+    emitLifecycle(this, "aua:rebind", __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_detail).call(this));
+  }
+  /** Activate focus trap inside this adapter's Shadow DOM (use for modal/dialog adapters). */
+  enableFocusTrap() {
+    if (!__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f"))
+      return;
+    __classPrivateFieldGet(this, _AuaElement_cleanupFocusTrap, "f")?.call(this);
+    __classPrivateFieldSet(this, _AuaElement_cleanupFocusTrap, trapFocus(__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f")), "f");
+  }
+  /** Deactivate focus trap. */
+  disableFocusTrap() {
+    __classPrivateFieldGet(this, _AuaElement_cleanupFocusTrap, "f")?.call(this);
+    __classPrivateFieldSet(this, _AuaElement_cleanupFocusTrap, null, "f");
+  }
+  /**
+   * ADR-009 open question: cross-shadow-boundary aria-describedby / aria-labelledby
+   * reliability varies by browser. NEEDS VERIFICATION per browser at implementation time.
+   * Call this method rather than silently dropping the ARIA relationship.
+   */
+  flagCrossAriaRisk(detail) {
+    console.warn(`[AUA] Cross-shadow ARIA boundary risk detected (ADR-009 open question). Verify per-browser before relying on this relationship. Detail: ${detail}`, this);
+  }
+};
+_AuaElement_shadowRoot = /* @__PURE__ */ new WeakMap(), _AuaElement_cleanupFocusTrap = /* @__PURE__ */ new WeakMap(), _AuaElement_previouslyFocused = /* @__PURE__ */ new WeakMap(), _AuaElement_mutationObserver = /* @__PURE__ */ new WeakMap(), _AuaElement_lastConnectedParent = /* @__PURE__ */ new WeakMap(), _AuaElement_instances = /* @__PURE__ */ new WeakSet(), _AuaElement_clearShadowContent = function _AuaElement_clearShadowContent2() {
+  if (!__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f"))
+    return;
+  const toRemove = [];
+  __classPrivateFieldGet(this, _AuaElement_shadowRoot, "f").childNodes.forEach((node) => {
+    if (!(node instanceof HTMLStyleElement))
+      toRemove.push(node);
+  });
+  toRemove.forEach((n) => n.parentNode?.removeChild(n));
+}, _AuaElement_detail = function _AuaElement_detail2() {
+  return {
+    targetElementId: this.targetElementId,
+    elementTag: this.tagName.toLowerCase(),
+    timestamp: Date.now()
+  };
+};
+
+// ../../packages/web-components/dist/adapters/a11y-field-proxy.js
+var __classPrivateFieldSet2 = function(receiver, state, value, kind, f) {
+  if (kind === "m") throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+};
+var __classPrivateFieldGet2 = function(receiver, state, kind, f) {
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _A11yFieldProxy_shadowRoot;
+var _A11yFieldProxy_labelEl;
+var _A11yFieldProxy_inputEl;
+var _A11yFieldProxy_errorEl;
+var FIELD_TYPES = ["text", "number", "email", "search", "tel", "date"];
+function toFieldType(value) {
+  return FIELD_TYPES.includes(value ?? "") ? value : "text";
+}
+var FIELD_PROXY_CSS = `
+  :host {
+    display: inline-block;
+  }
+  label {
+    display: block;
+    font: inherit;
+    margin-bottom: 0.25rem;
+  }
+  input {
+    box-sizing: border-box;
+    font: inherit;
+    padding: 0.375rem 0.5rem;
+    border-radius: 4px;
+    background: var(--aua-field-bg, #ffffff);
+    color: var(--aua-field-fg, #1a1a1a);
+    border: 1px solid var(--aua-field-border, #767676);
+  }
+  input:focus-visible {
+    outline: 2px solid var(--aua-field-focus-ring, #005fcc);
+    outline-offset: 1px;
+  }
+  input[aria-invalid="true"] {
+    border-color: var(--aua-field-border, #c0272d);
+  }
+  [part="error"] {
+    display: block;
+    min-height: 1em;
+    margin-top: 0.25rem;
+    color: #c0272d;
+    font-size: 0.85em;
+  }
+`;
+var A11yFieldProxy = class extends AuaElement {
+  constructor() {
+    super(...arguments);
+    _A11yFieldProxy_shadowRoot.set(this, null);
+    _A11yFieldProxy_labelEl.set(this, null);
+    _A11yFieldProxy_inputEl.set(this, null);
+    _A11yFieldProxy_errorEl.set(this, null);
+  }
+  static get observedAttributes() {
+    return ["label", "value", "field-type", "required", "error-message"];
+  }
+  get accessibleRole() {
+    return "textbox";
+  }
+  get accessibleName() {
+    const label = this.getAttribute("label");
+    if (label && label.trim().length > 0) {
+      return label;
+    }
+    console.warn('[A11yFieldProxy] Empty "label" attribute \u2014 falling back to placeholder accessible name "Field". This is an authoring error: provide a real label.', this);
+    return "Field";
+  }
+  render(shadowRoot) {
+    __classPrivateFieldSet2(this, _A11yFieldProxy_shadowRoot, shadowRoot, "f");
+    const style = document.createElement("style");
+    style.textContent = FIELD_PROXY_CSS;
+    const label = document.createElement("label");
+    label.setAttribute("part", "label");
+    label.id = "proxy-label";
+    label.textContent = this.accessibleName;
+    const input = document.createElement("input");
+    input.setAttribute("part", "input");
+    input.setAttribute("aria-labelledby", "proxy-label");
+    input.type = toFieldType(this.getAttribute("field-type"));
+    input.value = this.getAttribute("value") ?? "";
+    input.required = this.hasAttribute("required");
+    input.addEventListener("input", () => {
+      this.dispatchEvent(new CustomEvent("a11y-value-change", {
+        detail: { value: input.value, targetElementId: this.targetElementId },
+        bubbles: true,
+        composed: true
+      }));
+    });
+    const errorMessage = this.getAttribute("error-message") ?? "";
+    const errorEl = document.createElement("span");
+    errorEl.setAttribute("part", "error");
+    errorEl.setAttribute("role", "alert");
+    errorEl.setAttribute("aria-live", "assertive");
+    errorEl.textContent = errorMessage;
+    if (errorMessage) {
+      input.setAttribute("aria-invalid", "true");
+    } else {
+      input.removeAttribute("aria-invalid");
+    }
+    shadowRoot.appendChild(style);
+    shadowRoot.appendChild(label);
+    shadowRoot.appendChild(input);
+    shadowRoot.appendChild(errorEl);
+    __classPrivateFieldSet2(this, _A11yFieldProxy_labelEl, label, "f");
+    __classPrivateFieldSet2(this, _A11yFieldProxy_inputEl, input, "f");
+    __classPrivateFieldSet2(this, _A11yFieldProxy_errorEl, errorEl, "f");
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue)
+      return;
+    if (!__classPrivateFieldGet2(this, _A11yFieldProxy_shadowRoot, "f"))
+      return;
+    switch (name) {
+      case "value": {
+        if (__classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f") && __classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f").value !== (newValue ?? "")) {
+          __classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f").value = newValue ?? "";
+        }
+        break;
+      }
+      case "field-type": {
+        if (__classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f"))
+          __classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f").type = toFieldType(newValue);
+        break;
+      }
+      case "required": {
+        if (__classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f"))
+          __classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f").required = this.hasAttribute("required");
+        break;
+      }
+      case "error-message": {
+        const message = newValue ?? "";
+        if (__classPrivateFieldGet2(this, _A11yFieldProxy_errorEl, "f"))
+          __classPrivateFieldGet2(this, _A11yFieldProxy_errorEl, "f").textContent = message;
+        if (__classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f")) {
+          if (message) {
+            __classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f").setAttribute("aria-invalid", "true");
+          } else {
+            __classPrivateFieldGet2(this, _A11yFieldProxy_inputEl, "f").removeAttribute("aria-invalid");
+          }
+        }
+        break;
+      }
+      case "label": {
+        if (__classPrivateFieldGet2(this, _A11yFieldProxy_labelEl, "f"))
+          __classPrivateFieldGet2(this, _A11yFieldProxy_labelEl, "f").textContent = this.accessibleName;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+};
+_A11yFieldProxy_shadowRoot = /* @__PURE__ */ new WeakMap(), _A11yFieldProxy_labelEl = /* @__PURE__ */ new WeakMap(), _A11yFieldProxy_inputEl = /* @__PURE__ */ new WeakMap(), _A11yFieldProxy_errorEl = /* @__PURE__ */ new WeakMap();
+if (!customElements.get("a11y-field-proxy")) {
+  customElements.define("a11y-field-proxy", A11yFieldProxy);
+}
+
+// ../../packages/web-components/dist/adapters/a11y-live-region.js
+var __classPrivateFieldSet3 = function(receiver, state, value, kind, f) {
+  if (kind === "m") throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+};
+var __classPrivateFieldGet3 = function(receiver, state, kind, f) {
+  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _A11yLiveRegion_shadowRoot;
+var _A11yLiveRegion_divEl;
+var _A11yLiveRegion_clearTimeoutHandle;
+function toPoliteness(value) {
+  return value === "assertive" ? "assertive" : "polite";
+}
+var LIVE_REGION_CSS = `
+  :host {
+    display: block;
+  }
+  div {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+`;
+var A11yLiveRegion = class extends AuaElement {
+  constructor() {
+    super(...arguments);
+    _A11yLiveRegion_shadowRoot.set(this, null);
+    _A11yLiveRegion_divEl.set(this, null);
+    _A11yLiveRegion_clearTimeoutHandle.set(this, null);
+  }
+  static get observedAttributes() {
+    return ["politeness", "atomic"];
+  }
+  get accessibleRole() {
+    return "status";
+  }
+  get accessibleName() {
+    return "Announcements";
+  }
+  render(shadowRoot) {
+    __classPrivateFieldSet3(this, _A11yLiveRegion_shadowRoot, shadowRoot, "f");
+    const style = document.createElement("style");
+    style.textContent = LIVE_REGION_CSS;
+    const div = document.createElement("div");
+    div.setAttribute("role", "status");
+    div.setAttribute("aria-live", toPoliteness(this.getAttribute("politeness")));
+    div.setAttribute("aria-atomic", this.hasAttribute("atomic") ? "true" : "false");
+    shadowRoot.appendChild(style);
+    shadowRoot.appendChild(div);
+    __classPrivateFieldSet3(this, _A11yLiveRegion_divEl, div, "f");
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue)
+      return;
+    if (!__classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f"))
+      return;
+    if (name === "politeness") {
+      __classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f").setAttribute("aria-live", toPoliteness(newValue));
+    } else if (name === "atomic") {
+      __classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f").setAttribute("aria-atomic", this.hasAttribute("atomic") ? "true" : "false");
+    }
+  }
+  /**
+   * Announce `message` to assistive technology by writing it into the live region.
+   * If `clearAfterMs` is given, the text is cleared back to "" after that delay —
+   * any previously scheduled clear is cancelled first so overlapping announce()
+   * calls never wipe out a message that hasn't had time to be read yet.
+   */
+  announce(message, clearAfterMs) {
+    if (__classPrivateFieldGet3(this, _A11yLiveRegion_clearTimeoutHandle, "f") !== null) {
+      clearTimeout(__classPrivateFieldGet3(this, _A11yLiveRegion_clearTimeoutHandle, "f"));
+      __classPrivateFieldSet3(this, _A11yLiveRegion_clearTimeoutHandle, null, "f");
+    }
+    if (__classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f")) {
+      __classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f").textContent = message;
+    }
+    if (typeof clearAfterMs === "number") {
+      __classPrivateFieldSet3(this, _A11yLiveRegion_clearTimeoutHandle, setTimeout(() => {
+        if (__classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f"))
+          __classPrivateFieldGet3(this, _A11yLiveRegion_divEl, "f").textContent = "";
+        __classPrivateFieldSet3(this, _A11yLiveRegion_clearTimeoutHandle, null, "f");
+      }, clearAfterMs), "f");
+    }
+  }
+};
+_A11yLiveRegion_shadowRoot = /* @__PURE__ */ new WeakMap(), _A11yLiveRegion_divEl = /* @__PURE__ */ new WeakMap(), _A11yLiveRegion_clearTimeoutHandle = /* @__PURE__ */ new WeakMap();
+if (!customElements.get("a11y-live-region")) {
+  customElements.define("a11y-live-region", A11yLiveRegion);
+}
+
 // ../../packages/contracts/dist/semantic-page-model.js
 var SEMANTIC_MODEL_VERSION = "1.0.0";
 
@@ -746,6 +1206,64 @@ var SemanticModelBuilder = class _SemanticModelBuilder {
 // src/content/content-script.ts
 var AUA_VERSION = "1";
 var builder = new SemanticModelBuilder();
+var liveRegion = null;
+var proxyCounter = 0;
+function ensureLiveRegion() {
+  if (liveRegion && liveRegion.isConnected) return liveRegion;
+  if (!document.body.id) document.body.id = "aua-body-anchor";
+  const region = document.createElement("a11y-live-region");
+  region.targetElementId = document.body.id;
+  document.body.appendChild(region);
+  liveRegion = region;
+  return region;
+}
+function hasAccessibleName(el) {
+  if (el.getAttribute("aria-label")?.trim()) return true;
+  const labelledBy = el.getAttribute("aria-labelledby");
+  if (labelledBy && document.getElementById(labelledBy)?.textContent?.trim()) return true;
+  if (el.labels) {
+    for (const label of Array.from(el.labels)) {
+      if (label.textContent?.trim()) return true;
+    }
+  }
+  return false;
+}
+function guessLabel(el) {
+  const placeholder = el.getAttribute("placeholder");
+  if (placeholder?.trim()) return placeholder.trim();
+  const name = el.getAttribute("name");
+  if (name?.trim()) return name.trim().replace(/[-_]+/g, " ");
+  return "Campo senza etichetta";
+}
+function resolveMissingLabelBarriers() {
+  const fields = document.querySelectorAll(
+    "input:not([type=hidden]):not([data-aua-proxied]), textarea:not([data-aua-proxied])"
+  );
+  fields.forEach((el) => {
+    if (el.closest("a11y-field-proxy")) return;
+    el.setAttribute("data-aua-proxied", "true");
+    if (hasAccessibleName(el)) return;
+    if (!el.id) el.id = `aua-field-${++proxyCounter}`;
+    const label = guessLabel(el);
+    const proxy = document.createElement("a11y-field-proxy");
+    proxy.targetElementId = el.id;
+    proxy.setAttribute("label", label);
+    if (el instanceof HTMLInputElement && el.type) {
+      proxy.setAttribute("field-type", el.type);
+    }
+    proxy.setAttribute("value", el.value ?? "");
+    proxy.addEventListener("a11y-value-change", (event) => {
+      const detail = event.detail;
+      el.value = detail.value;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    el.insertAdjacentElement("afterend", proxy);
+    ensureLiveRegion().announce(
+      `Barriera di accessibilit\xE0 rilevata e risolta: campo "${label}" senza etichetta \u2014 aggiunta versione accessibile.`,
+      6e3
+    );
+  });
+}
 var currentModel = null;
 function getCurrentModel() {
   return currentModel;
@@ -771,8 +1289,10 @@ function init() {
   injectPageBridge();
   window.addEventListener("message", handleBridgeMessage);
   currentModel = builder.buildFull(document, window.location.pathname);
+  resolveMissingLabelBarriers();
   const observer = new MutationObserver((mutations) => {
     currentModel = builder.buildIncremental(mutations);
+    resolveMissingLabelBarriers();
   });
   observer.observe(document.body, {
     subtree: true,

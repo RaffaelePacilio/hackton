@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo AUA — modulo inaccessibile</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 3rem auto; }
+    h1 { font-size: 1.25rem; }
+    p.note { color: #555; font-size: 0.9rem; }
+    input, textarea {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0 1.5rem;
+      padding: 0.5rem;
+      font: inherit;
+      box-sizing: border-box;
+    }
+    /* Nessun <label> collegato: pattern reale e comune di modulo inaccessibile. */
+  </style>
+</head>
+<body>
+  <h1>Modulo di contatto (demo)</h1>
+  <p class="note">
+    Questi campi non hanno un'etichetta accessibile collegata (niente
+    <code>&lt;label&gt;</code>, niente <code>aria-label</code>) — un utente che
+    usa uno screen reader non sa cosa deve scrivere. Con l'estensione AUA
+    caricata, dovrebbe apparire automaticamente un campo accessibile
+    affiancato a ciascuno, con l'etichetta corretta.
+  </p>
+
+  <input type="text" name="full_name" placeholder="Nome e cognome" />
+  <input type="email" name="email_address" placeholder="Indirizzo email" />
+  <textarea name="message" placeholder="Messaggio"></textarea>
+
+  <button type="button" onclick="alert('Demo — nessun invio reale')">Invia</button>
+</body>
+</html>

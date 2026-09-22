@@ -13,6 +13,9 @@ export default {
     // own sources, sidestepping both the exports-conditions mismatch and the
     // untransformed-ESM-output problem without touching the contracts package.
     "^@aua/contracts$": "<rootDir>/../../packages/contracts/src/index.ts",
+    // Same ESM/exports-conditions mismatch as @aua/contracts above, for the
+    // web-components package pulled in by the pocket-demo barrier resolution.
+    "^@aua/web-components$": "<rootDir>/../../packages/web-components/src/index.ts",
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   transform: {

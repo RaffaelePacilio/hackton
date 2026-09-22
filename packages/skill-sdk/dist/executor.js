@@ -1,118 +1,162 @@
 // Skill Executor (WP-010).
 //
-// ADR-008: capability-class gating is enforced here, not in the Adaptation Planner.
-// The Planner can *request* any skill; only the Executor can *run* one, and it
-// re-validates permissions independent of what the Planner claims.
+// ADR-008: capability-class gating and the confirmation policy are enforced here, in the
+// Executor — not in the Adaptation Planner. The Planner may *request* any skill; only the
+// Executor can *run* one, and it independently re-validates the skill's declared
+// `securityClassification` against the binding confirmation-policy table
+// (aua/docs/contracts/skill-contract.md), regardless of what the Planner claims.
 //
-// ADR-014: this is the only execution surface — no eval, no dynamic code from the
-// page or the LLM. Actual DOM interaction (`performSkill`) and actual verification
-// (`verify`) are injected dependencies so this package stays decoupled from the
-// Form Agent and from @aua/verification-engine (both being built in parallel).
-//
-// Unknown skillId, version mismatch, disallowed capability class, or invalid inputs
-// all produce the same hard-rejection outcome: status "failed",
-// errorCode "FRAMEWORK_BLOCKED", verification.failureClass "framework-blocked" —
-// never a fallback to generated code.
+// ADR-014 / Section 3.7, 22: this package never falls back to arbitrary/generated DOM code.
+// An unknown skillId, invalid inputs, a missing handler, or a policy violation are all hard
+// rejections. Actual DOM interaction (SkillHandler) and actual post-hoc verification (Verifier)
+// are injected dependencies so this package stays decoupled from the Form Agent (which owns the
+// DOM) and from @aua/verification-engine (built in parallel by another package). This module
+// must never import DOM types (`Element`, `document`, etc.).
 import Ajv from "ajv";
 import { get } from "./loader.js";
-function frameworkBlocked(invocationId) {
-    return {
-        invocationId,
-        status: "failed",
-        errorCode: "FRAMEWORK_BLOCKED",
-        verification: {
-            invocationId,
-            verified: false,
-            method: "dom-read",
-            failureClass: "framework-blocked",
-        },
-    };
-}
+/**
+ * Binding confirmation policy — aua/docs/contracts/skill-contract.md, "Confirmation policy"
+ * table. Enforced in `SkillExecutor.execute`, independent of what the Adaptation Planner claims
+ * (ADR-008).
+ *
+ * - `"auto"`                                   READ, FOCUS, NAVIGATE — automatic.
+ * - `"auto-verified"`                          WRITE_LOW_RISK — automatic, always verified
+ *                                               post-hoc.
+ * - `"auto-announce"`                          WRITE_PERSONAL_DATA — automatic with a
+ *                                               visible/audible pre-announcement (the
+ *                                               announcement itself is a caller concern, e.g. an
+ *                                               `announce` skill invoked upstream of this one);
+ *                                               the user may additionally configure
+ *                                               `confirmBeforeAction: true` outside this package.
+ * - `"confirm"`                                SUBMIT — confirmation required by default.
+ * - `"confirm-always"`                         AUTHENTICATE, PAYMENT — explicit confirmation
+ *                                               every time; this executor never memoizes a
+ *                                               "remember my choice" decision across calls.
+ * - `"prohibited-unless-rollback-confirmed"`   DESTRUCTIVE — prohibited unless the target skill
+ *                                               declares `rollback: "supported"` AND
+ *                                               confirmation is given.
+ */
+export const CONFIRMATION_POLICY = {
+    READ: "auto",
+    FOCUS: "auto",
+    NAVIGATE: "auto",
+    WRITE_LOW_RISK: "auto-verified",
+    WRITE_PERSONAL_DATA: "auto-announce",
+    SUBMIT: "confirm",
+    AUTHENTICATE: "confirm-always",
+    PAYMENT: "confirm-always",
+    DESTRUCTIVE: "prohibited-unless-rollback-confirmed",
+};
+const ajv = new Ajv({ allErrors: true, strict: false });
 export class SkillExecutor {
-    constructor(allowedClasses, performSkill, verify) {
-        this.allowedClasses = allowedClasses;
-        this.performSkill = performSkill;
-        this.verify = verify;
+    constructor(opts) {
+        this.handlers = opts.handlers;
+        this.verifier = opts.verifier;
+        this.confirm = opts.confirm;
     }
-    /**
-     * Independently re-validates a requested invocation against the registry
-     * (ADR-008): unknown skillId, version mismatch, disallowed capability class,
-     * and inputSchema violations are all reported here, regardless of what the
-     * Adaptation Planner claims.
-     */
-    validate(invocation) {
-        const errors = [];
-        const def = get(invocation.skillId);
-        if (!def) {
-            errors.push(`unknown skillId "${invocation.skillId}"`);
-            return { valid: false, errors };
+    async execute(invocation) {
+        // 1. Unknown skillId is a hard rejection — never a fallback to generated code (ADR-008).
+        const skillDef = get(invocation.skillId);
+        if (!skillDef) {
+            return {
+                invocationId: invocation.invocationId,
+                status: "failed",
+                errorCode: "UNKNOWN_SKILL",
+            };
         }
-        if (def.version !== invocation.skillVersion) {
-            errors.push(`version mismatch: invocation requests "${invocation.skillVersion}" but registry has "${def.version}"`);
-        }
-        if (!def.permissions.every((p) => this.allowedClasses.has(p))) {
-            errors.push(`capability class not allowed: skill requires [${def.permissions.join(", ")}], allowed=[${[...this.allowedClasses].join(", ")}]`);
-        }
-        const ajv = new Ajv({ allErrors: true, strict: false });
-        const validateInputs = ajv.compile(def.inputSchema);
+        // 2. Inputs must conform to the skill's own inputSchema.
+        const validateInputs = ajv.compile(skillDef.inputSchema);
         if (!validateInputs(invocation.inputs)) {
-            for (const e of validateInputs.errors ?? []) {
-                errors.push(`input schema: ${e.instancePath || "/"} ${e.message}`);
+            return {
+                invocationId: invocation.invocationId,
+                status: "failed",
+                errorCode: "INVALID_INPUT",
+            };
+        }
+        // 3. Confirmation-policy gating, keyed on the skill's declared securityClassification —
+        // never on what the Planner requested (ADR-008).
+        const mode = CONFIRMATION_POLICY[skillDef.securityClassification];
+        if (mode === "confirm" || mode === "confirm-always") {
+            const confirmed = this.confirm
+                ? await this.confirm(skillDef, invocation)
+                : false;
+            if (!confirmed) {
+                return {
+                    invocationId: invocation.invocationId,
+                    status: "requires-confirmation",
+                };
             }
         }
-        return { valid: errors.length === 0, errors };
-    }
-    /**
-     * Validates then executes an invocation. A failed validation is a hard
-     * rejection (ADR-008/ADR-014) — it never falls back to any other behavior.
-     */
-    async execute(invocation) {
-        const check = this.validate(invocation);
-        if (!check.valid) {
-            return frameworkBlocked(invocation.invocationId);
+        if (mode === "prohibited-unless-rollback-confirmed") {
+            if (skillDef.rollback !== "supported") {
+                return {
+                    invocationId: invocation.invocationId,
+                    status: "failed",
+                    errorCode: "PROHIBITED",
+                };
+            }
+            const confirmed = this.confirm
+                ? await this.confirm(skillDef, invocation)
+                : false;
+            if (!confirmed) {
+                return {
+                    invocationId: invocation.invocationId,
+                    status: "failed",
+                    errorCode: "PROHIBITED",
+                };
+            }
         }
-        const def = get(invocation.skillId);
-        let output;
-        let errorCode;
+        // 4. A known, policy-cleared skill with no bound handler is still a hard rejection — never
+        // a fallback.
+        const handler = this.handlers.get(invocation.skillId);
+        if (!handler) {
+            return {
+                invocationId: invocation.invocationId,
+                status: "failed",
+                errorCode: "NO_HANDLER_REGISTERED",
+            };
+        }
+        // 5. Execute the injected handler.
+        let handlerResult;
         try {
-            const result = await this.performSkill(def, invocation);
-            output = result.output;
-            errorCode = result.errorCode;
+            handlerResult = await handler(invocation, skillDef);
         }
         catch {
             return {
                 invocationId: invocation.invocationId,
                 status: "failed",
-                errorCode: "EXECUTION_ERROR",
+                errorCode: "HANDLER_ERROR",
             };
         }
-        if (errorCode) {
-            return {
-                invocationId: invocation.invocationId,
-                status: "failed",
-                errorCode,
-            };
-        }
-        let verification;
-        if (this.verify) {
-            try {
-                verification = await this.verify(def, invocation);
-            }
-            catch {
-                verification = {
+        // 6/7. Verification is opt-in at this layer: it only runs when the skill declares a
+        // verificationStrategy AND the caller supplied a Verifier. Per ADR-017, every skill WITH a
+        // verificationStrategy SHOULD have a verifier supplied by production callers — this package
+        // cannot enforce that from inside itself, since the verifier is an injected dependency
+        // (this module stays decoupled from @aua/verification-engine).
+        if (skillDef.verificationStrategy && this.verifier) {
+            const verification = await this.verifier(skillDef, invocation, handlerResult.output);
+            if (!verification.verified &&
+                skillDef.rollback === "supported" &&
+                handlerResult.rollback) {
+                await handlerResult.rollback();
+                return {
                     invocationId: invocation.invocationId,
-                    verified: false,
-                    method: "dom-read",
-                    failureClass: "timeout",
+                    status: "rolled-back",
+                    output: handlerResult.output,
+                    verification,
                 };
             }
+            return {
+                invocationId: invocation.invocationId,
+                status: verification.verified ? "success" : "failed",
+                output: handlerResult.output,
+                verification,
+            };
         }
-        const status = verification && !verification.verified ? "failed" : "success";
         return {
             invocationId: invocation.invocationId,
-            status,
-            output,
-            verification,
+            status: "success",
+            output: handlerResult.output,
         };
     }
 }

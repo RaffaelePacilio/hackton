@@ -9,7 +9,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _AuaElement_instances, _AuaElement_shadowRoot, _AuaElement_cleanupFocusTrap, _AuaElement_previouslyFocused, _AuaElement_mutationObserver, _AuaElement_clearShadowContent, _AuaElement_detail;
+var _AuaElement_instances, _AuaElement_shadowRoot, _AuaElement_cleanupFocusTrap, _AuaElement_previouslyFocused, _AuaElement_mutationObserver, _AuaElement_lastConnectedParent, _AuaElement_clearShadowContent, _AuaElement_detail;
 import { emitLifecycle } from "./lifecycle-emitter.js";
 import { trapFocus, restoreFocus } from "./focus-manager.js";
 // CSS injected into every adapter's closed Shadow DOM.
@@ -72,8 +72,10 @@ export class AuaElement extends HTMLElement {
         _AuaElement_cleanupFocusTrap.set(this, null);
         _AuaElement_previouslyFocused.set(this, null);
         _AuaElement_mutationObserver.set(this, null);
+        _AuaElement_lastConnectedParent.set(this, null);
     }
     connectedCallback() {
+        __classPrivateFieldSet(this, _AuaElement_lastConnectedParent, this.parentNode, "f");
         if (!this.targetElementId) {
             console.warn("[AUA] targetElementId not set — adapter not mounted.", this);
             return;
@@ -106,7 +108,11 @@ export class AuaElement extends HTMLElement {
         __classPrivateFieldGet(this, _AuaElement_mutationObserver, "f")?.disconnect();
         __classPrivateFieldSet(this, _AuaElement_mutationObserver, null, "f");
         __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_clearShadowContent).call(this);
-        emitLifecycle(this, "aua:unmount", __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_detail).call(this));
+        // this.parentNode is already null here (disconnectedCallback fires after
+        // removal) — dispatch from the last known parent so the bubbling event
+        // still reaches listeners attached higher in the tree.
+        emitLifecycle(__classPrivateFieldGet(this, _AuaElement_lastConnectedParent, "f") ?? this, "aua:unmount", __classPrivateFieldGet(this, _AuaElement_instances, "m", _AuaElement_detail).call(this));
+        __classPrivateFieldSet(this, _AuaElement_lastConnectedParent, null, "f");
     }
     /**
      * Call when the host SPA re-renders the proxied element (same logical element,
@@ -146,7 +152,7 @@ export class AuaElement extends HTMLElement {
             `Verify per-browser before relying on this relationship. Detail: ${detail}`, this);
     }
 }
-_AuaElement_shadowRoot = new WeakMap(), _AuaElement_cleanupFocusTrap = new WeakMap(), _AuaElement_previouslyFocused = new WeakMap(), _AuaElement_mutationObserver = new WeakMap(), _AuaElement_instances = new WeakSet(), _AuaElement_clearShadowContent = function _AuaElement_clearShadowContent() {
+_AuaElement_shadowRoot = new WeakMap(), _AuaElement_cleanupFocusTrap = new WeakMap(), _AuaElement_previouslyFocused = new WeakMap(), _AuaElement_mutationObserver = new WeakMap(), _AuaElement_lastConnectedParent = new WeakMap(), _AuaElement_instances = new WeakSet(), _AuaElement_clearShadowContent = function _AuaElement_clearShadowContent() {
     if (!__classPrivateFieldGet(this, _AuaElement_shadowRoot, "f"))
         return;
     // Remove only non-style children so the base stylesheet is preserved.
