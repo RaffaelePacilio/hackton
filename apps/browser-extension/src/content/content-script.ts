@@ -87,6 +87,8 @@ function resolveMissingLabelBarriers(): void {
       `Barriera di accessibilità rilevata e risolta: campo "${label}" senza etichetta — aggiunta versione accessibile.`,
       6000
     );
+
+    console.info(`[AUA] barrier resolved: unlabeled field "${label}" -> a11y-field-proxy mounted`, el);
   });
 }
 
@@ -95,9 +97,10 @@ function resolveMissingLabelBarriers(): void {
 // Wiring that transport is out of scope for WP-007.
 let currentModel: SemanticPageModel | null = null;
 
-export function getCurrentModel(): SemanticPageModel | null {
+function getCurrentModel(): SemanticPageModel | null {
   return currentModel;
 }
+void getCurrentModel; // currently unread — kept for the next consumer (WP-007 note above)
 
 function injectPageBridge(): void {
   const bridgeUrl = chrome.runtime.getURL("dist/content/page-bridge.js");
@@ -127,6 +130,7 @@ function handleBridgeMessage(event: MessageEvent): void {
 }
 
 function init(): void {
+  console.info("[AUA] content-script loaded on", window.location.href);
   injectPageBridge();
 
   window.addEventListener("message", handleBridgeMessage);
