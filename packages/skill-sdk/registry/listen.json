@@ -1,0 +1,46 @@
+{
+  "id": "listen",
+  "version": "1.0.0",
+  "purpose": "Activate the voice input pipeline to capture a user speech utterance, returning the transcribed text for intent recognition.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "language": { "type": "string", "default": "en-US", "description": "BCP 47 language tag" },
+      "timeoutMs": { "type": "integer", "minimum": 500, "default": 10000 },
+      "continuous": { "type": "boolean", "default": false }
+    }
+  },
+  "preconditions": [
+    "Voice input provider is available and user has granted microphone permission"
+  ],
+  "permissions": ["READ"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["transcript", "isFinal"],
+    "properties": {
+      "transcript": { "type": "string" },
+      "isFinal": { "type": "boolean" },
+      "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+      "languageDetected": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "MIC_PERMISSION_DENIED", "retryable": false },
+    { "code": "VOICE_PROVIDER_UNAVAILABLE", "retryable": true },
+    { "code": "LISTEN_TIMEOUT", "retryable": true },
+    { "code": "NO_SPEECH_DETECTED", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "dom-read",
+  "telemetry": {
+    "emits": [
+      "aua.skill.listen.invoked",
+      "aua.skill.listen.completed"
+    ]
+  },
+  "securityClassification": "READ"
+}

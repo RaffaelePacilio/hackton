@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessibility Settings — AUA</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <a class="skip-link" href="#contract-form">Skip to form</a>
+
+  <main>
+    <h1>Accessibility Settings</h1>
+
+    <form id="contract-form" novalidate aria-label="Accessibility preference settings">
+
+      <!-- Input Methods -->
+      <fieldset>
+        <legend>Input Methods</legend>
+
+        <div class="field-row">
+          <label for="input-keyboard">Keyboard</label>
+          <select id="input-keyboard" name="input.keyboard" aria-label="Keyboard availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="input-pointer">Pointer / Mouse</label>
+          <select id="input-pointer" name="input.pointer" aria-label="Pointer availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="input-touch">Touch</label>
+          <select id="input-touch" name="input.touch" aria-label="Touch availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="input-voice">Voice</label>
+          <select id="input-voice" name="input.voice" aria-label="Voice availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="input-switch">Switch Access</label>
+          <select id="input-switch" name="input.switch" aria-label="Switch access availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- Actions -->
+      <fieldset>
+        <legend>Actions</legend>
+
+        <div class="field-row">
+          <label for="actions-drag">Drag &amp; Drop</label>
+          <select id="actions-drag" name="actions.drag" aria-label="Drag and drop availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="actions-precision">Precision Targeting</label>
+          <select id="actions-precision" name="actions.precisionTargeting" aria-label="Precision targeting availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="actions-shortcuts">Complex Shortcuts</label>
+          <select id="actions-shortcuts" name="actions.complexShortcuts" aria-label="Complex keyboard shortcuts availability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Available</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- Perception -->
+      <fieldset>
+        <legend>Perception</legend>
+
+        <div class="field-row">
+          <label for="perception-smalltext">Small Text</label>
+          <select id="perception-smalltext" name="perception.smallText" aria-label="Small text readability">
+            <option value="unknown">Unknown</option>
+            <option value="available">Readable</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Not Readable</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="perception-contrast">Color Contrast</label>
+          <select id="perception-contrast" name="perception.colorContrast" aria-label="Color contrast sensitivity">
+            <option value="unknown">Unknown</option>
+            <option value="available">Normal</option>
+            <option value="difficult">Difficult</option>
+            <option value="unavailable">Cannot distinguish</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="perception-motion">Motion Sensitivity</label>
+          <select id="perception-motion" name="perception.motion" aria-label="Motion sensitivity">
+            <option value="unknown">Unknown</option>
+            <option value="available">Unaffected</option>
+            <option value="difficult">Somewhat sensitive</option>
+            <option value="unavailable">Very sensitive</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- Preferences -->
+      <fieldset>
+        <legend>Preferences</legend>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="pref-largetargets" name="preferences.largeTargets" />
+          <label for="pref-largetargets">Prefer larger click/tap targets</label>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="pref-linear" name="preferences.linearNavigation" />
+          <label for="pref-linear">Prefer linear navigation (no complex layouts)</label>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="pref-reducedmotion" name="preferences.reducedMotion" />
+          <label for="pref-reducedmotion">Reduce motion &amp; animations</label>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="pref-spoken" name="preferences.spokenFeedback" />
+          <label for="pref-spoken">Enable spoken feedback</label>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="pref-confirm" name="preferences.confirmBeforeAction" checked />
+          <label for="pref-confirm">Confirm before performing actions</label>
+        </div>
+      </fieldset>
+
+      <div class="form-footer">
+        <button type="submit">Save Settings</button>
+        <div id="status" role="status" aria-live="polite" aria-atomic="true"></div>
+      </div>
+
+    </form>
+  </main>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

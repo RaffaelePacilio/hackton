@@ -1,0 +1,48 @@
+{
+  "id": "verify_navigation",
+  "version": "1.0.0",
+  "purpose": "Read the current browser route and confirm it matches an expected route pattern, verifying that a prior navigation action completed successfully.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["expectedRoute"],
+    "additionalProperties": false,
+    "properties": {
+      "expectedRoute": { "type": "string", "description": "Exact path or pattern to match against current route" },
+      "matchStrategy": {
+        "type": "string",
+        "enum": ["exact", "prefix", "contains"],
+        "default": "exact"
+      },
+      "timeoutMs": { "type": "integer", "minimum": 100, "default": 3000 }
+    }
+  },
+  "preconditions": [
+    "SemanticPageModel is available for the current page"
+  ],
+  "permissions": ["READ"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["verified", "observedRoute"],
+    "properties": {
+      "verified": { "type": "boolean" },
+      "observedRoute": { "type": "string" },
+      "expectedRoute": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "NAVIGATION_TIMEOUT", "retryable": true },
+    { "code": "ROUTE_MISMATCH", "retryable": false }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "route-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.verify_navigation.invoked",
+      "aua.skill.verify_navigation.completed"
+    ]
+  },
+  "securityClassification": "READ"
+}

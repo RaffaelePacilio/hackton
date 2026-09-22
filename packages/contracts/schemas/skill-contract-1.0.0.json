@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aua.dev/schemas/skill-contract-1.0.0.json",
+  "title": "SkillDefinition",
+  "type": "object",
+  "required": ["id", "version", "purpose", "inputSchema", "preconditions", "permissions", "sideEffects", "outputSchema", "errorModel", "rollback", "verificationStrategy", "telemetry", "securityClassification"],
+  "additionalProperties": false,
+  "properties": {
+    "id":                    { "type": "string" },
+    "version":               { "type": "string" },
+    "purpose":               { "type": "string" },
+    "inputSchema":           { "type": "object" },
+    "preconditions":         { "type": "array", "items": { "type": "string" } },
+    "permissions":           { "type": "array", "items": { "$ref": "#/definitions/capabilityClass" } },
+    "sideEffects":           { "type": "array", "items": { "type": "string" } },
+    "outputSchema":          { "type": "object" },
+    "errorModel": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "retryable"],
+        "additionalProperties": false,
+        "properties": {
+          "code":      { "type": "string" },
+          "retryable": { "type": "boolean" }
+        }
+      }
+    },
+    "rollback":               { "type": "string", "enum": ["supported", "not-applicable", "manual-only"] },
+    "verificationStrategy":   { "type": "string" },
+    "telemetry": {
+      "type": "object",
+      "required": ["emits"],
+      "additionalProperties": false,
+      "properties": {
+        "emits": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "securityClassification": { "$ref": "#/definitions/capabilityClass" }
+  },
+  "definitions": {
+    "capabilityClass": {
+      "type": "string",
+      "enum": ["READ", "FOCUS", "NAVIGATE", "WRITE_LOW_RISK", "WRITE_PERSONAL_DATA", "SUBMIT", "AUTHENTICATE", "PAYMENT", "DESTRUCTIVE"]
+    }
+  }
+}

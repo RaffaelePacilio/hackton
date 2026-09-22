@@ -1,0 +1,44 @@
+{
+  "id": "focus_semantic_field",
+  "version": "1.0.0",
+  "purpose": "Move browser focus to a semantic field element identified in the SemanticPageModel, ensuring it is visible and keyboard-reachable.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id to focus" },
+      "scrollIntoView": { "type": "boolean", "default": true }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "Element is visible and focusable"
+  ],
+  "permissions": ["FOCUS"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["focused"],
+    "properties": {
+      "focused": { "type": "boolean" },
+      "elementId": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "ELEMENT_NOT_FOCUSABLE", "retryable": false },
+    { "code": "FOCUS_INTERCEPTED", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.focus_semantic_field.invoked",
+      "aua.skill.focus_semantic_field.completed"
+    ]
+  },
+  "securityClassification": "FOCUS"
+}

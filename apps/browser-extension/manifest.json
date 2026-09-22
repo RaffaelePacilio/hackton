@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "AUA Accessibility Assistant",
+  "version": "0.1.0",
+  "description": "Universal Accessibility Bootstrap — deterministic, LLM-independent accessibility runtime.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "optional_host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "dist/background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "dist/bootstrap/popup.html",
+    "default_title": "Accessibility Settings",
+    "default_icon": {
+      "128": "icons/icon-128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content/content-script.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dist/content/page-bridge.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none';"
+  },
+  "icons": {
+    "128": "icons/icon-128.png"
+  }
+}

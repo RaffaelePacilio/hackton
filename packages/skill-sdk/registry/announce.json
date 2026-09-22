@@ -1,0 +1,45 @@
+{
+  "id": "announce",
+  "version": "1.0.0",
+  "purpose": "Inject a message into an ARIA live region so it is announced to screen reader users, providing audible feedback about an action's outcome or a page state change.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["message"],
+    "additionalProperties": false,
+    "properties": {
+      "message": { "type": "string", "minLength": 1 },
+      "politeness": {
+        "type": "string",
+        "enum": ["polite", "assertive"],
+        "default": "polite",
+        "description": "ARIA live region politeness setting"
+      }
+    }
+  },
+  "preconditions": [
+    "An ARIA live region is available on the page (created by the extension if not present)"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["aria-live-announcement"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["announced"],
+    "properties": {
+      "announced": { "type": "boolean" }
+    }
+  },
+  "errorModel": [
+    { "code": "LIVE_REGION_UNAVAILABLE", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.announce.invoked",
+      "aua.skill.announce.completed"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

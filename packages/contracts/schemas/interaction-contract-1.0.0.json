@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aua.dev/schemas/interaction-contract-1.0.0.json",
+  "title": "InteractionContract",
+  "type": "object",
+  "required": ["version", "contractId", "updatedAt", "input", "actions", "perception", "preferences"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": "1.0.0" },
+    "contractId": { "type": "string" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "input": {
+      "type": "object",
+      "required": ["keyboard", "pointer", "touch", "voice", "switch"],
+      "additionalProperties": false,
+      "properties": {
+        "keyboard": { "$ref": "#/definitions/availability" },
+        "pointer":  { "$ref": "#/definitions/availability" },
+        "touch":    { "$ref": "#/definitions/availability" },
+        "voice":    { "$ref": "#/definitions/availability" },
+        "switch":   { "$ref": "#/definitions/availability" }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "required": ["drag", "precisionTargeting", "complexShortcuts"],
+      "additionalProperties": false,
+      "properties": {
+        "drag":               { "$ref": "#/definitions/availability" },
+        "precisionTargeting": { "$ref": "#/definitions/availability" },
+        "complexShortcuts":   { "$ref": "#/definitions/availability" }
+      }
+    },
+    "perception": {
+      "type": "object",
+      "required": ["smallText"],
+      "additionalProperties": false,
+      "properties": {
+        "smallText":     { "$ref": "#/definitions/availability" },
+        "colorContrast": { "$ref": "#/definitions/availability" },
+        "motion":        { "$ref": "#/definitions/availability" }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "required": ["largeTargets", "linearNavigation", "reducedMotion", "spokenFeedback"],
+      "additionalProperties": false,
+      "properties": {
+        "largeTargets":       { "type": "boolean" },
+        "linearNavigation":   { "type": "boolean" },
+        "reducedMotion":      { "type": "boolean" },
+        "spokenFeedback":     { "type": "boolean" },
+        "confirmBeforeAction":{ "type": "boolean" }
+      }
+    }
+  },
+  "definitions": {
+    "availability": {
+      "type": "string",
+      "enum": ["available", "unavailable", "unknown", "difficult"]
+    }
+  }
+}

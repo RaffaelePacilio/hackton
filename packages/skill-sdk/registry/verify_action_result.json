@@ -1,0 +1,51 @@
+{
+  "id": "verify_action_result",
+  "version": "1.0.0",
+  "purpose": "Compare a pre-action DOM state snapshot against the current state to confirm that a prior action produced the expected side-effect.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["invocationId", "expectedState"],
+    "additionalProperties": false,
+    "properties": {
+      "invocationId": { "type": "string", "description": "invocationId of the skill action being verified" },
+      "expectedState": {
+        "type": "object",
+        "description": "Key-value pairs describing expected DOM state after the action"
+      },
+      "timeoutMs": { "type": "integer", "minimum": 100, "default": 2000 }
+    }
+  },
+  "preconditions": [
+    "Pre-action state snapshot was captured before the action being verified"
+  ],
+  "permissions": ["READ"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["verified"],
+    "properties": {
+      "verified": { "type": "boolean" },
+      "diff": { "type": "object", "description": "Observed vs expected state deltas" },
+      "failureClass": {
+        "type": "string",
+        "enum": ["timeout", "mismatch", "element-gone", "framework-blocked"]
+      }
+    }
+  },
+  "errorModel": [
+    { "code": "SNAPSHOT_NOT_FOUND", "retryable": false },
+    { "code": "VERIFICATION_TIMEOUT", "retryable": true },
+    { "code": "STATE_MISMATCH", "retryable": false }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "state-diff",
+  "telemetry": {
+    "emits": [
+      "aua.skill.verify_action_result.invoked",
+      "aua.skill.verify_action_result.completed"
+    ]
+  },
+  "securityClassification": "READ"
+}

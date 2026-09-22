@@ -1,0 +1,33 @@
+{
+  "name": "@aua/semantic-model",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SemanticPageModel builder — walks the live DOM and produces a SemanticPageModel per the frozen @aua/contracts shape (WP-007)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aua/contracts": "^1.0.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.0",
+    "happy-dom": "^14.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
