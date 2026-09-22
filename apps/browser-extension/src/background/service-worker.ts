@@ -1,5 +1,12 @@
 // TODO SYNC-1: replace createNullTransport with import from @aua/shared
 
+// Minimal ambient Service Worker types — the project lib set is DOM (needed by
+// content-script files), which is incompatible with the "webworker" lib.
+declare const clients: { claim(): Promise<void> };
+interface ExtendableEvent extends Event {
+  waitUntil(f: Promise<unknown>): void;
+}
+
 interface BackendTransport {
   send(msg: unknown): Promise<unknown>;
   isAvailable(): Promise<boolean>;

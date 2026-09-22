@@ -63,6 +63,7 @@ export abstract class AuaElement extends HTMLElement implements AccessibilityAda
   #cleanupFocusTrap: (() => void) | null = null;
   #previouslyFocused: Element | null = null;
   #mutationObserver: MutationObserver | null = null;
+  #lastConnectedParent: Node | null = null;
 
   /** ARIA role the shadow-hosted control presents to assistive technology. */
   abstract get accessibleRole(): string;
@@ -74,6 +75,8 @@ export abstract class AuaElement extends HTMLElement implements AccessibilityAda
   protected abstract render(shadowRoot: ShadowRoot): void;
 
   connectedCallback(): void {
+    this.#lastConnectedParent = this.parentNode;
+
     if (!this.targetElementId) {
       console.warn("[AUA] targetElementId not set — adapter not mounted.", this);
       return;
@@ -120,7 +123,11 @@ export abstract class AuaElement extends HTMLElement implements AccessibilityAda
 
     this.#clearShadowContent();
 
-    emitLifecycle(this, "aua:unmount", this.#detail());
+    // this.parentNode is already null here (disconnectedCallback fires after
+    // removal) — dispatch from the last known parent so the bubbling event
+    // still reaches listeners attached higher in the tree.
+    emitLifecycle(this.#lastConnectedParent ?? this, "aua:unmount", this.#detail());
+    this.#lastConnectedParent = null;
   }
 
   /**

@@ -1,0 +1,26 @@
+{
+  "name": "@aua/voice",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SpeechProvider implementations (ADR-007): OpenAI Realtime (Mode B, default), Azure Cognitive Services chained pipeline (Mode A, fallback), browser/OS-native STT (last resort), and the automatic fallback chain (WP-015)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

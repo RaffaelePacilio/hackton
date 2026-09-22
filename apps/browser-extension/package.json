@@ -9,6 +9,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts"
   },
+  "dependencies": {
+    "@aua/contracts": "1.0.0"
+  },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
     "@types/jest": "^29.5.12",
