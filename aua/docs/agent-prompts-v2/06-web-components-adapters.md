@@ -16,6 +16,19 @@ focus-manager.ts, lifecycle-emitter.ts}`) e 2 adapter reali (`a11y-field-proxy`,
 `a11y-focus-guide`, `a11y-action-panel`, `a11y-reader`, `a11y-skip-navigation`,
 `a11y-voice-input`.
 
+PRIMA DI AGGIUNGERE QUALSIASI NUOVO ADAPTER — bug noto da risolvere: `npm run test` su questo
+workspace fallisce oggi con 19 test falliti su 55, tutti dentro
+`test/unit/a11y-field-proxy.test.ts` e `test/unit/a11y-live-region.test.ts`. Sintomo: in alcuni
+test (non tutti, sullo stesso file/stessa classe) `el.accessibleRole`/`el.accessibleName`
+risultano `undefined` pur essendo getter correttamente definiti su `A11yFieldProxy`/
+`A11yLiveRegion`. Non è stato introdotto dal merge dei due repo (Wave 0) — questi file sono
+arrivati così, senza conflitto, dal repo del compagno di squadra. Vedi
+`aua/docs/agent-prompts-v2/MERGE-NOTES.md` per il dettaglio. Investiga e risolvi questo prima
+di scrivere i 9 adapter nuovi, altrimenti rischi di replicare lo stesso bug 9 volte. Sospetto
+(non confermato) legato a come Vitest/jsdom fanno l'upgrade dell'elemento custom creato via
+`document.createElement(tag)` in certi ordini di esecuzione dei test — verifica anche
+`packages/web-components/vitest.config.ts` (impostazioni di isolamento/ambiente tra i test).
+
 Leggi prima (solo lettura):
 - aua/docs/adr/ADR-009-web-component-adaptation.md (per la mappa completa skill→adapter e i
   requisiti di theming/lifecycle/shadow DOM)

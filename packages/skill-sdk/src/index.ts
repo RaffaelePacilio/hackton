@@ -7,9 +7,5 @@ export type {
   VerificationResult,
 } from "./types.js";
 export { SKILL_CONTRACT_VERSION } from "./types.js";
-export { SkillExecutor } from "./executor.js";
-export type {
-  ValidationResult,
-  PerformSkill,
-  VerifySkill,
-} from "./executor.js";
+export { SkillExecutor, CONFIRMATION_POLICY } from "./executor.js";
+export type { SkillHandler, Verifier } from "./executor.js";
