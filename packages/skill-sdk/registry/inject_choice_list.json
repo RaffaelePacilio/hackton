@@ -1,0 +1,46 @@
+{
+  "id": "inject_choice_list",
+  "version": "1.0.0",
+  "purpose": "Inject an accessible listbox or radio-group web component over a custom or non-native select widget, providing keyboard and switch-accessible option selection.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id of the target select or custom widget" },
+      "multiSelect": { "type": "boolean", "default": false }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "Element has discoverable options in the SemanticPageModel"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["dom-mutation"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["injected"],
+    "properties": {
+      "injected": { "type": "boolean" },
+      "choiceListId": { "type": "string" },
+      "optionCount": { "type": "integer" }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "NO_OPTIONS_FOUND", "retryable": true },
+    { "code": "ALREADY_INJECTED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.inject_choice_list.invoked",
+      "aua.skill.inject_choice_list.completed",
+      "aua.skill.inject_choice_list.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "read_errors",
+  "version": "1.0.0",
+  "purpose": "Read all visible validation error and alert messages from the current page, optionally scoped to a specific form or region.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "scopeElementId": {
+        "type": "string",
+        "description": "Optional SemanticElement.id to restrict error scanning to a sub-tree"
+      }
+    }
+  },
+  "preconditions": [
+    "SemanticPageModel has been captured for the current page"
+  ],
+  "permissions": ["READ"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["errors"],
+    "properties": {
+      "errors": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["elementId", "message"],
+          "properties": {
+            "elementId": { "type": "string" },
+            "message": { "type": "string" },
+            "severity": { "type": "string", "enum": ["error", "warning", "info"] }
+          }
+        }
+      }
+    }
+  },
+  "errorModel": [
+    { "code": "SCOPE_NOT_FOUND", "retryable": false }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "dom-read",
+  "telemetry": {
+    "emits": [
+      "aua.skill.read_errors.invoked",
+      "aua.skill.read_errors.completed"
+    ]
+  },
+  "securityClassification": "READ"
+}

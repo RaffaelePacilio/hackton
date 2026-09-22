@@ -1,0 +1,47 @@
+{
+  "id": "inject_stepper",
+  "version": "1.0.0",
+  "purpose": "Inject an accessible numeric stepper web component for a number input field, replacing pointer-only increment and decrement controls with keyboard-accessible buttons.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id of the numeric input field" },
+      "step": { "type": "number", "default": 1 },
+      "min": { "type": "number" },
+      "max": { "type": "number" }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "Element is a numeric input (type=number or role=spinbutton)"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["dom-mutation"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["injected"],
+    "properties": {
+      "injected": { "type": "boolean" },
+      "stepperId": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "NOT_NUMERIC_INPUT", "retryable": false },
+    { "code": "ALREADY_INJECTED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.inject_stepper.invoked",
+      "aua.skill.inject_stepper.completed",
+      "aua.skill.inject_stepper.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

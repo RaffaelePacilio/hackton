@@ -1,0 +1,50 @@
+{
+  "id": "inject_field_proxy",
+  "version": "1.0.0",
+  "purpose": "Inject an accessible field proxy web component adjacent to an existing form field, providing an alternative keyboard/switch interaction surface without replacing the original element.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id of the target field" },
+      "label": { "type": "string", "description": "Accessible label for the proxy (defaults to original field label)" },
+      "placement": {
+        "type": "string",
+        "enum": ["before", "after"],
+        "default": "after"
+      }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "No field proxy is already injected for this element"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["dom-mutation"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["injected"],
+    "properties": {
+      "injected": { "type": "boolean" },
+      "proxyId": { "type": "string", "description": "Stable id of the injected proxy element for rollback" }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "INJECTION_BLOCKED", "retryable": false },
+    { "code": "ALREADY_INJECTED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.inject_field_proxy.invoked",
+      "aua.skill.inject_field_proxy.completed",
+      "aua.skill.inject_field_proxy.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

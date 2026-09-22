@@ -1,0 +1,5 @@
+{
+  "name": "aua-monorepo",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*", "spikes/*"]
+}

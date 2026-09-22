@@ -1,0 +1,50 @@
+{
+  "id": "replace_hover",
+  "version": "1.0.0",
+  "purpose": "Override hover-triggered UI behaviours (tooltips, menus, reveals) on a target element with focus- and keyboard-triggered equivalents, making content accessible without pointer use.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id of the hover-triggered element" },
+      "triggerEvent": {
+        "type": "string",
+        "enum": ["focus", "click", "both"],
+        "default": "focus",
+        "description": "Keyboard event that replaces the hover trigger"
+      }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel",
+    "Element has a hover-only interaction detected"
+  ],
+  "permissions": ["WRITE_LOW_RISK"],
+  "sideEffects": ["event-handler-override"],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["replaced"],
+    "properties": {
+      "replaced": { "type": "boolean" },
+      "alternativeTriggerId": { "type": "string" }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "NO_HOVER_DETECTED", "retryable": false },
+    { "code": "OVERRIDE_BLOCKED", "retryable": false }
+  ],
+  "rollback": "supported",
+  "verificationStrategy": "accessibility-check",
+  "telemetry": {
+    "emits": [
+      "aua.skill.replace_hover.invoked",
+      "aua.skill.replace_hover.completed",
+      "aua.skill.replace_hover.rolled_back"
+    ]
+  },
+  "securityClassification": "WRITE_LOW_RISK"
+}

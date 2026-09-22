@@ -1,0 +1,45 @@
+{
+  "id": "read_element",
+  "version": "1.0.0",
+  "purpose": "Read the accessible content, role, name, and state of a single semantic element from the current page model.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId"],
+    "additionalProperties": false,
+    "properties": {
+      "elementId": { "type": "string", "description": "SemanticElement.id" },
+      "includeChildren": { "type": "boolean", "default": false }
+    }
+  },
+  "preconditions": [
+    "Element with matching id exists in the current SemanticPageModel"
+  ],
+  "permissions": ["READ"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["elementId", "role", "name", "state"],
+    "properties": {
+      "elementId": { "type": "string" },
+      "role": { "type": "string" },
+      "name": { "type": "string" },
+      "state": { "type": "object" },
+      "children": { "type": "array", "items": { "type": "object" } }
+    }
+  },
+  "errorModel": [
+    { "code": "ELEMENT_NOT_FOUND", "retryable": false },
+    { "code": "ELEMENT_HIDDEN", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "dom-read",
+  "telemetry": {
+    "emits": [
+      "aua.skill.read_element.invoked",
+      "aua.skill.read_element.completed"
+    ]
+  },
+  "securityClassification": "READ"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@aua/barrier-detection",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Deterministic barrier detection engine — compares SemanticElement.requiredCapabilities against a user's InteractionContract to produce Barriers (WP-012, ADR-005)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aua/contracts": "^1.0.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

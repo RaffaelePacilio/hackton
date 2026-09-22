@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aua.dev/schemas/agent-contract-1.0.0.json",
+  "title": "AgentContractTypes",
+  "definitions": {
+    "userIntent": {
+      "type": "object",
+      "required": ["intentId", "intent", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "intentId":  { "type": "string" },
+        "intent": {
+          "type": "string",
+          "enum": ["fill-field", "navigate-to", "read-region", "read-errors", "set-value", "describe-page", "activate-action", "custom"]
+        },
+        "semanticTarget": { "type": "string" },
+        "value":          { "type": ["string", "number"] },
+        "confidence":     { "type": "number", "minimum": 0, "maximum": 1 },
+        "rawUtterance":   { "type": "string" },
+        "disambiguationCandidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["elementId", "score"],
+            "additionalProperties": false,
+            "properties": {
+              "elementId": { "type": "string" },
+              "score":     { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "barrier": {
+      "type": "object",
+      "required": ["barrierId", "elementId", "requiredCapabilities", "availableCapabilities", "severity", "confidence", "determinedBy"],
+      "additionalProperties": false,
+      "properties": {
+        "barrierId":            { "type": "string" },
+        "elementId":            { "type": "string" },
+        "requiredCapabilities": { "type": "array", "items": { "type": "string" } },
+        "availableCapabilities":{ "type": "array", "items": { "type": "string" } },
+        "blockedIntent":        { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["blocking", "usability", "preference-mismatch", "unknown", "none"]
+        },
+        "confidence":   { "type": "number", "minimum": 0, "maximum": 1 },
+        "determinedBy": { "type": "string", "enum": ["rule", "inference"] }
+      }
+    },
+    "adaptationPlan": {
+      "type": "object",
+      "required": ["planId", "barrierId", "chosenSkillId", "rationale", "determinedBy"],
+      "additionalProperties": false,
+      "properties": {
+        "planId":         { "type": "string" },
+        "barrierId":      { "type": "string" },
+        "chosenSkillId":  { "type": "string" },
+        "rationale":      { "type": "string" },
+        "determinedBy":   { "type": "string", "enum": ["rule", "inference"] },
+        "fallbackPlanId": { "type": "string" }
+      }
+    },
+    "auditEvent": {
+      "type": "object",
+      "required": ["eventId", "correlationIds", "type", "redacted", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "eventId": { "type": "string" },
+        "correlationIds": {
+          "type": "object",
+          "required": ["sessionId", "pageId"],
+          "additionalProperties": false,
+          "properties": {
+            "sessionId":        { "type": "string" },
+            "pageId":           { "type": "string" },
+            "interactionId":    { "type": "string" },
+            "agentRunId":       { "type": "string" },
+            "skillExecutionId": { "type": "string" },
+            "adaptationId":     { "type": "string" },
+            "voiceTurnId":      { "type": "string" }
+          }
+        },
+        "type":      { "type": "string" },
+        "redacted":  { "type": "boolean" },
+        "timestamp": { "type": "string" }
+      }
+    },
+    "speechEvent": {
+      "type": "object",
+      "required": ["sessionId", "turnId", "type", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "sessionId":        { "type": "string" },
+        "turnId":           { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["partial-transcript", "final-transcript", "tts-start", "tts-end", "barge-in"]
+        },
+        "text":             { "type": "string" },
+        "languageDetected": { "type": "string" },
+        "timestamp":        { "type": "string" }
+      }
+    },
+    "navigationEvent": {
+      "type": "object",
+      "required": ["navigationId", "method", "fromRoute", "toRoute", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "navigationId": { "type": "string" },
+        "method": {
+          "type": "string",
+          "enum": ["pushState", "replaceState", "popstate", "dom-mutation"]
+        },
+        "fromRoute":  { "type": "string" },
+        "toRoute":    { "type": "string" },
+        "timestamp":  { "type": "string" }
+      }
+    }
+  }
+}

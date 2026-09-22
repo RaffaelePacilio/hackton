@@ -1,0 +1,44 @@
+{
+  "id": "read_region",
+  "version": "1.0.0",
+  "purpose": "Read the accessible content and structure of a named page region (landmark, section, or grouping) from the current semantic page model.",
+  "inputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["regionId"],
+    "additionalProperties": false,
+    "properties": {
+      "regionId": { "type": "string", "description": "SemanticElement.id of the region element" },
+      "depth": { "type": "integer", "minimum": 1, "default": 2, "description": "How many levels of child elements to include" }
+    }
+  },
+  "preconditions": [
+    "Region element with matching id exists in the current SemanticPageModel"
+  ],
+  "permissions": ["READ"],
+  "sideEffects": [],
+  "outputSchema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["regionId", "role", "name", "elements"],
+    "properties": {
+      "regionId": { "type": "string" },
+      "role": { "type": "string" },
+      "name": { "type": "string" },
+      "elements": { "type": "array", "items": { "type": "object" } }
+    }
+  },
+  "errorModel": [
+    { "code": "REGION_NOT_FOUND", "retryable": false },
+    { "code": "REGION_HIDDEN", "retryable": true }
+  ],
+  "rollback": "not-applicable",
+  "verificationStrategy": "dom-read",
+  "telemetry": {
+    "emits": [
+      "aua.skill.read_region.invoked",
+      "aua.skill.read_region.completed"
+    ]
+  },
+  "securityClassification": "READ"
+}
